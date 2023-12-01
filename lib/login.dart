@@ -1,3 +1,5 @@
+import 'package:bid/common/loader.dart';
+import 'package:bid/common/pop-up.dart';
 import 'package:bid/main.dart';
 import 'package:bid/signup.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,12 +14,30 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  bool isLoading = false;
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
+  String _validateFields() {
+    String msg = '';
+
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      msg += 'All fields are required.\n';
+    }
+
+    if (!RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+')
+        .hasMatch(_emailController.text)) {
+      msg += 'Enter a valid email address.\n';
+    }
+
+    return msg;
+  }
+
   Future<void> login(String email, String password) async {
     try {
+      setState(() {
+        isLoading = true; // Set isLoading to true before signup
+      });
       // Sign in with email and password
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -31,6 +51,13 @@ class _LoginPageState extends State<LoginPage> {
           .get();
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
 
+      setState(() {
+        isLoading = false; // Set isLoading to true before signup
+      });
+      CustomPopup(
+        message: 'User signed In successfully!',
+        isSuccess: true,
+      );
       // Navigate to home page or perform other actions after successful login
       print('User logged in successfully!');
       print('Username: ${userData['username']}');
@@ -43,6 +70,18 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (e) {
       print('Error during login: $e');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomPopup(
+            message: 'Error during login: $e',
+            isSuccess: false,
+          );
+        },
+      );
+      setState(() {
+        isLoading = false; // Set isLoading to true before signup
+      });
       // Handle login errors here
     }
   }
@@ -73,10 +112,27 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             SizedBox(height: 20),
+            Visibility(
+              visible: isLoading,
+              child: CustomLoader(), // Add your loader widget here
+            ),
             ElevatedButton(
               onPressed: () {
                 // Implement login functionality here
-                login(_emailController.text, _passwordController.text);
+                String msg = _validateFields();
+                if (msg != '') {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CustomPopup(
+                        message: msg,
+                        isSuccess: false,
+                      );
+                    },
+                  );
+                } else {
+                  login(_emailController.text, _passwordController.text);
+                }
               },
               child: Text('Login'),
             ),

@@ -1,16 +1,15 @@
-import 'package:bid/student-add.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class BatchView extends StatelessWidget {
+class CropView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Batches'),
+        title: Text('Crop View'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('Batch').snapshots(),
+        stream: FirebaseFirestore.instance.collection('crop').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -26,29 +25,27 @@ class BatchView extends StatelessWidget {
               Map<String, dynamic> data =
                   documents[index].data() as Map<String, dynamic>;
               return ListTile(
-                title: Text("${data['BatchName']} --- ${data['Timings']}"),
-                subtitle: Text(data['Details']),
+                title: Text("${data['name']}"),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Description: ${data['description']}"),
+                    Text("Price: ${data['price']}"),
+                    Text("Start Auction Date: ${data['start_auct_date']}"),
+                    Text("End Auction Date: ${data['end_auct_date']}"),
+                    Text("User ID: ${data['user_id']}"),
+                  ],
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: Icon(Icons.panorama_fish_eye),
                       onPressed: () {
-                        Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => StudentAdd(b_id_fk: documents[index].id,)),
-            );
+                        // Add any action you want when the eye icon is pressed
                       },
                     ),
-                    // IconButton(
-                    //   icon: Icon(Icons.delete),
-                    //   onPressed: () {
-                    //     FirebaseFirestore.instance
-                    //         .collection('Employee')
-                    //         .doc(documents[index].id)
-                    //         .delete();
-                    //   },
-                    // ),
+                    // Add more IconButton widgets for other actions
                   ],
                 ),
               );

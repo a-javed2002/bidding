@@ -1,3 +1,4 @@
+import 'package:bid/common/loader.dart';
 import 'package:bid/common/pop-up.dart';
 import 'package:bid/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,8 +13,9 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  bool isLoading = false;
   String _username = '';
+  String _cnic = '';
   String _email = '';
   String _password = '';
   String _selectedRole = 'Buyer';
@@ -21,12 +23,16 @@ class _SignUpPageState extends State<SignUpPage> {
   String _validateFields() {
     String msg = '';
 
-    if (_username.isEmpty || _email.isEmpty || _password.isEmpty) {
+    if (_username.isEmpty || _email.isEmpty || _password.isEmpty || _cnic.isEmpty) {
       msg += 'All fields are required.\n';
     }
 
     if (_username.length < 3) {
       msg += 'Username must be at least 3 characters.\n';
+    }
+
+    if (_username.length < 10) {
+      msg += 'CNIC must be at least 10 characters.\n';
     }
 
     if (_password.length < 6) {
@@ -42,6 +48,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> signUp() async {
     try {
+      setState(() {
+        isLoading = true; // Set isLoading to true before signup
+      });
       // Create user with email and password
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -52,12 +61,17 @@ class _SignUpPageState extends State<SignUpPage> {
       // Store additional user data in Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'username': _username,
+        'cnic': _cnic,
         'email': _email,
         'role': _selectedRole,
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
       // Navigate to home page or perform other actions after successful signup
       print('User signed up successfully!');
+      setState(() {
+        isLoading = false; // Set isLoading back to false after successful signup
+      });
       CustomPopup(
         message: 'User signed up successfully!',
         isSuccess: true,
@@ -68,6 +82,9 @@ class _SignUpPageState extends State<SignUpPage> {
         MaterialPageRoute(builder: (context) => LoginPage()),
       );
     } catch (e) {
+      setState(() {
+        isLoading = false; // Set isLoading back to false after successful signup
+      });
       print('Error during signup: $e');
       CustomPopup(
         message: 'Error during signup: $e',
@@ -96,6 +113,17 @@ class _SignUpPageState extends State<SignUpPage> {
               },
               decoration: InputDecoration(
                 labelText: 'Username',
+              ),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              onChanged: (value) {
+                setState(() {
+                  _cnic = value;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'CNIC',
               ),
             ),
             SizedBox(height: 20),
@@ -158,6 +186,10 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             SizedBox(height: 20),
+            Visibility(
+              visible: isLoading,
+              child: CustomLoader(), // Add your loader widget here
+            ),
             ElevatedButton(
               onPressed: () async {
                 // Implement sign-up functionality here

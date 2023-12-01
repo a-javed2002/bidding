@@ -1,5 +1,5 @@
-import 'package:bid/batch-add.dart';
-import 'package:bid/batch.dart';
+import 'package:bid/crop-add.dart';
+import 'package:bid/crop.dart';
 import 'package:bid/login.dart';
 import 'package:bid/student.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -82,18 +82,18 @@ class MyHomePage extends StatelessWidget {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BatchAdd()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => BatchAdd()),
+                    // );
                   },
                   child: Text("Create Batch")),
               ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BatchView()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => BatchView()),
+                    // );
                   },
                   child: Text("View Batch")),
             ],
