@@ -31,7 +31,7 @@ class _SignUpPageState extends State<SignUpPage> {
       msg += 'Username must be at least 3 characters.\n';
     }
 
-    if (_username.length < 10) {
+    if (_cnic.length < 10) {
       msg += 'CNIC must be at least 10 characters.\n';
     }
 

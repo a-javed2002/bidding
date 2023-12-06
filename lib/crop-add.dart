@@ -1,3 +1,4 @@
+import 'package:bid/common/loader.dart';
 import 'package:bid/crop.dart';
 import 'package:flutter/material.dart';
 import 'package:bid/common/pop-up.dart';
@@ -14,6 +15,7 @@ class _CropAddState extends State<CropAdd> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
@@ -57,23 +59,42 @@ class _CropAddState extends State<CropAdd> {
   }
 
   Future<void> _insertCropData() async {
-  try {
-    await FirebaseFirestore.instance.collection('crop').add({
-      'name': _nameController.text,
-      'description': _descriptionController.text,
-      'price': _priceController.text,
-      'start_auct_date': _startAuctionDate!.toString(),
-      'end_auct_date': _endAuctionDate!.toString(),
-      'seller_id': _selectedRoleController.text,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    try {
+      setState(() {
+        isLoading = true; // Set isLoading to true before signup
+      });
+      await FirebaseFirestore.instance.collection('crop').add({
+        'name': _nameController.text,
+        'description': _descriptionController.text,
+        'price': _priceController.text,
+        'start_auct_date': _startAuctionDate!.toString(),
+        'end_auct_date': _endAuctionDate!.toString(),
+        'seller_id': _selectedRoleController.text,
+        'timestamp': FieldValue.serverTimestamp(),
+        'bids': [],
+        'feedback': {
+          'highest_bidder_id': '',
+          'comment': '',
+          'timestamp': null,
+        },
+      });
 
-    print('Crop data inserted successfully!');
-  } catch (e) {
-    print('Error inserting crop data: $e');
+        setState(() {
+        isLoading = false; // Set isLoading to true before signup
+      });
+
+      print('Crop data inserted successfully!');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CropView()),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Set isLoading to true before signup
+      });
+      print('Error inserting crop data: $e');
+    }
   }
-}
-
 
   Future<void> _selectStartDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
@@ -170,13 +191,15 @@ class _CropAddState extends State<CropAdd> {
                   ),
                 ],
               ),
-
               TextFormField(
                 controller: _selectedRoleController,
                 decoration: InputDecoration(labelText: 'User ID'),
                 enabled: false, // Disable editing
               ),
-
+              Visibility(
+              visible: isLoading,
+              child: CustomLoader(), // Add your loader widget here
+            ),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -190,12 +213,7 @@ class _CropAddState extends State<CropAdd> {
                     String endAuctionDate = _endAuctionDate!.toString();
                     String userID = _selectedRoleController.text;
 
-                    // Remaining signup logic...
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CropView()),
-                    );
+                    _insertCropData();
                   }
                 },
                 child: Text('Add Crop'),

@@ -36,17 +36,18 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 class MyHomePage extends StatelessWidget {
-  MyHomePage({super.key});
+  MyHomePage({Key? key});
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthService authService = AuthService();
 
   Future<void> _logout(BuildContext context) async {
     try {
       await _auth.signOut();
-      // Navigate to the login page after successful logout
-      // Navigator.pushReplacementNamed(context, '/login');
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
       );
@@ -56,70 +57,99 @@ class MyHomePage extends StatelessWidget {
     }
   }
 
-  AuthService authService = AuthService();
-
   @override
   Widget build(BuildContext context) {
-//       bool userLoggedIn = await authService.isLoggedIn();
-// if (userLoggedIn) {
-//   // User is logged in
-// } else {
-//   Navigator.push(
-//                       context,
-//                       MaterialPageRoute(builder: (context) => LoginPage()),
-//                     );
-// }
     return Scaffold(
       appBar: AppBar(
         title: Text("Dashboard"),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                  onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => BatchAdd()),
-                    // );
-                  },
-                  child: Text("Create Batch")),
-              ElevatedButton(
-                  onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => BatchView()),
-                    // );
-                  },
-                  child: Text("View Batch")),
-            ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 600), // Adjust as needed
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _getCrossAxisCount(context),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.2,
+            ),
+            itemCount: 4,
+            itemBuilder: (context, index) {
+              return _buildTile(context, index);
+            },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => StudentView()),
-                    );
-                  },
-                  child: Text("View Students")),
-              ElevatedButton(onPressed: () {}, child: Text("Setings")),
-              ElevatedButton(
-                  onPressed: () {
-                    _logout(context);
-                  },
-                  child: Text("Logout")),
-            ],
-          )
-        ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _logout(context);
+        },
+        tooltip: 'Logout',
+        child: Icon(Icons.logout),
       ),
     );
+  }
+
+  int _getCrossAxisCount(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 600) {
+      return 1; // Single column for smaller screens
+    } else {
+      return 2; // Two columns for larger screens
+    }
+  }
+
+  Widget _buildTile(BuildContext context, int index) {
+    List<String> titles = ["Create Bid", "View Bids", "View Requests", "Settings"];
+    List<IconData> icons = [Icons.add, Icons.list, Icons.person, Icons.settings];
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          _handleTileClick(context, index);
+        },
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icons[index],
+                size: 48,
+                color: Theme.of(context).primaryColor,
+              ),
+              SizedBox(height: 8),
+              Text(
+                titles[index],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleTileClick(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CropAdd()));
+        break;
+      case 1:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CropView()));
+        break;
+      case 2:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => StudentView()));
+        break;
+      case 3:
+        // Add navigation to the settings page
+        break;
+    }
   }
 }
 

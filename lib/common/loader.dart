@@ -8,7 +8,7 @@ class CustomLoader extends StatelessWidget {
         width: 80.0,
         height: 80.0,
         decoration: BoxDecoration(
-          color: Colors.black54,
+          color: Color.fromARGB(133, 204, 35, 246),
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Column(
